@@ -9,6 +9,11 @@ import (
 
 type Wei big.Int
 
+func New(val uint64) Wei {
+	b := big.Int{}
+	return NewFromBigInt(b.SetUint64(val))
+}
+
 func NewFromBigInt(val *big.Int) Wei {
 	return Wei(*val)
 }
