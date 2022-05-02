@@ -33,3 +33,8 @@ func (w *Wei) Scan(src interface{}) error {
 
 	return nil
 }
+
+func (w Wei) MarshalJSON() ([]byte, error) {
+	val := big.Int(w)
+	return val.MarshalJSON()
+}
