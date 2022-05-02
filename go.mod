@@ -1,6 +1,6 @@
 module github.com/kostaspt/go-wei
 
-go 1.18
+go 1.17
 
 require (
 	github.com/jackc/pgtype v1.11.0
