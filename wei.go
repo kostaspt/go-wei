@@ -1,6 +1,7 @@
 package wei
 
 import (
+	"bytes"
 	"math/big"
 
 	"github.com/jackc/pgtype"
@@ -42,4 +43,18 @@ func (w *Wei) Scan(src interface{}) error {
 func (w Wei) MarshalJSON() ([]byte, error) {
 	val := big.Int(w)
 	return val.MarshalJSON()
+}
+
+func (w *Wei) UnmarshalJSON(b []byte) error {
+	b = bytes.ReplaceAll(b, []byte("\""), []byte{})
+
+	bi := new(big.Int)
+
+	if err := bi.UnmarshalJSON(b); err != nil {
+		return err
+	}
+
+	*w = NewFromBigInt(bi)
+
+	return nil
 }
