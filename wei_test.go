@@ -32,16 +32,41 @@ func TestWei_Ether(t *testing.T) {
 	assert.True(t, val.Ether().Equal(decimal.NewFromFloat(13.37)))
 }
 
+type testJSONStruct struct {
+	Foo string `json:"foo"`
+	Wei Wei    `json:"wei"`
+}
+
 func TestWei_MarshalJSON(t *testing.T) {
 	val := testValue()
 
-	m, err := json.Marshal(map[string]interface{}{
-		"foo": "bar",
-		"val": val,
+	m, err := json.Marshal(testJSONStruct{
+		Foo: "bar",
+		Wei: val,
 	})
 	assert.NoError(t, err)
 
-	assert.Equal(t, `{"foo":"bar","val":13370000000000000000}`, string(m))
+	assert.Equal(t, `{"foo":"bar","wei":13370000000000000000}`, string(m))
+}
+
+func TestWei_UnmarshalJSON(t *testing.T) {
+	var (
+		res testJSONStruct
+		j   []byte
+		err error
+	)
+
+	j, err = json.Marshal(testJSONStruct{
+		Foo: "bar",
+		Wei: testValue(),
+	})
+	assert.NoError(t, err)
+
+	err = json.Unmarshal(j, &res)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "13.37", res.Wei.Ether().String())
+	assert.Equal(t, "bar", res.Foo)
 }
 
 func testValue() Wei {
