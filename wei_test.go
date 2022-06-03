@@ -9,6 +9,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNew(t *testing.T) {
+	var val uint64 = 1337
+
+	w := New(val)
+	bi := new(big.Int).SetInt64(int64(val))
+
+	assert.Equal(t, 0, bi.Cmp(w.BigInt()))
+}
+
+func TestWei_SetDecimals(t *testing.T) {
+	val := testValue()
+
+	val.SetDecimals(17)
+
+	assert.True(t, val.Ether().Equal(decimal.NewFromFloat(133.7)))
+}
+
 func TestWei_Ether(t *testing.T) {
 	val := testValue()
 
@@ -22,9 +39,7 @@ func TestWei_MarshalJSON(t *testing.T) {
 		"foo": "bar",
 		"val": val,
 	})
-	if err != nil {
-		return
-	}
+	assert.NoError(t, err)
 
 	assert.Equal(t, `{"foo":"bar","val":13370000000000000000}`, string(m))
 }

@@ -8,7 +8,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type Wei big.Int
+type Wei struct {
+	raw      *big.Int
+	decimals uint8
+}
 
 func New(val uint64) Wei {
 	b := big.Int{}
@@ -16,17 +19,24 @@ func New(val uint64) Wei {
 }
 
 func NewFromBigInt(val *big.Int) Wei {
-	return Wei(*val)
+	return Wei{
+		raw:      val,
+		decimals: 18,
+	}
+}
+
+func (w *Wei) SetDecimals(d uint8) {
+	w.decimals = d
 }
 
 func (w Wei) Ether() decimal.Decimal {
-	val := big.Int(w)
-	return decimal.NewFromBigInt(&val, 1).Div(decimal.New(10, 18))
+	return decimal.
+		NewFromBigInt(w.BigInt(), 1).
+		Div(decimal.New(10, int32(w.decimals)))
 }
 
 func (w Wei) BigInt() *big.Int {
-	val := big.Int(w)
-	return &val
+	return w.raw
 }
 
 func (w *Wei) Scan(src interface{}) error {
@@ -35,14 +45,13 @@ func (w *Wei) Scan(src interface{}) error {
 		return err
 	}
 
-	*w = Wei(*decimal.NewFromBigInt(parsed.Int, parsed.Exp).BigInt())
+	*w = Wei{raw: decimal.NewFromBigInt(parsed.Int, parsed.Exp).BigInt()}
 
 	return nil
 }
 
 func (w Wei) MarshalJSON() ([]byte, error) {
-	val := big.Int(w)
-	return val.MarshalJSON()
+	return w.raw.MarshalJSON()
 }
 
 func (w *Wei) UnmarshalJSON(b []byte) error {
