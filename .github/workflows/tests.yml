@@ -26,4 +26,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Run tests
-        run: go test -race ./...
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: Send coverage results
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.out
+          fail_ci_if_error: true
+          verbose: true
