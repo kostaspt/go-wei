@@ -12,10 +12,11 @@ import (
 func TestNew(t *testing.T) {
 	var val uint64 = 1337
 
-	w := New(val)
+	w := New(val, 2)
 	bi := new(big.Int).SetInt64(int64(val))
 
 	assert.Equal(t, 0, bi.Cmp(w.BigInt()))
+	assert.Equal(t, "13.37", w.Ether().String())
 }
 
 func TestWei_SetDecimals(t *testing.T) {
@@ -29,7 +30,10 @@ func TestWei_SetDecimals(t *testing.T) {
 func TestWei_Ether(t *testing.T) {
 	val := testValue()
 
-	assert.True(t, val.Ether().Equal(decimal.NewFromFloat(13.37)))
+	actual := val.Ether()
+	expected := decimal.NewFromFloat(13.37)
+
+	assert.Truef(t, actual.Equal(expected), "%s is not the same with %s", actual.String(), expected.String())
 }
 
 type testJSONStruct struct {
@@ -46,7 +50,7 @@ func TestWei_MarshalJSON(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	assert.Equal(t, `{"foo":"bar","wei":13370000000000000000}`, string(m))
+	assert.Equal(t, `{"foo":"bar","wei":{"value":"13.37","raw":13370000000000000000,"decimals":18}}`, string(m))
 }
 
 func TestWei_UnmarshalJSON(t *testing.T) {
@@ -76,5 +80,5 @@ func testValue() Wei {
 	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(16), nil)
 
 	// Res: 13370000000000000000
-	return NewFromBigInt(new(big.Int).Mul(val, exp))
+	return NewFromBigInt(new(big.Int).Mul(val, exp), 18)
 }

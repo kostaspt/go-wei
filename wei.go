@@ -1,7 +1,7 @@
 package wei
 
 import (
-	"bytes"
+	"encoding/json"
 	"math/big"
 
 	"github.com/jackc/pgtype"
@@ -13,15 +13,23 @@ type Wei struct {
 	decimals uint8
 }
 
-func New(val uint64) Wei {
-	b := big.Int{}
-	return NewFromBigInt(b.SetUint64(val))
+type jsonWei struct {
+	Value    string   `json:"value"`
+	Raw      *big.Int `json:"raw"`
+	Decimals uint8    `json:"decimals"`
 }
 
-func NewFromBigInt(val *big.Int) Wei {
+func New(val uint64, decimals uint8) Wei {
+	return Wei{
+		raw:      new(big.Int).SetUint64(val),
+		decimals: decimals,
+	}
+}
+
+func NewFromBigInt(val *big.Int, decimals uint8) Wei {
 	return Wei{
 		raw:      val,
-		decimals: 18,
+		decimals: decimals,
 	}
 }
 
@@ -51,19 +59,29 @@ func (w *Wei) Scan(src interface{}) error {
 }
 
 func (w Wei) MarshalJSON() ([]byte, error) {
-	return w.raw.MarshalJSON()
+	j := jsonWei{
+		Value:    w.Ether().String(),
+		Raw:      w.raw,
+		Decimals: w.decimals,
+	}
+
+	return json.Marshal(j)
 }
 
 func (w *Wei) UnmarshalJSON(b []byte) error {
-	b = bytes.ReplaceAll(b, []byte("\""), []byte{})
+	var (
+		res jsonWei
+		err error
+	)
 
-	bi := new(big.Int)
-
-	if err := bi.UnmarshalJSON(b); err != nil {
+	if err = json.Unmarshal(b, &res); err != nil {
 		return err
 	}
 
-	*w = NewFromBigInt(bi)
+	*w = Wei{
+		raw:      res.Raw,
+		decimals: res.Decimals,
+	}
 
 	return nil
 }
