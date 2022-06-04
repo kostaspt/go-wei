@@ -26,8 +26,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Run tests
-        run: go test -race -coverprofile=coverage.out ./...
+        run: go test -race ./...
+      - name: Generate coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.18'
+        run: go test -coverprofile=coverage.out ./...
       - name: Send coverage results
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.18'
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
