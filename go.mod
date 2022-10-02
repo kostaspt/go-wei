@@ -3,7 +3,7 @@ module github.com/kostaspt/go-wei
 go 1.17
 
 require (
-	github.com/jackc/pgtype v1.11.0
+	github.com/jackc/pgtype v1.12.0
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.0
 )
